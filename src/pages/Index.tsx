@@ -117,6 +117,27 @@ const Index = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-8 rounded-xl border-2 border-primary/30 space-y-6">
+              <div className="text-center space-y-4">
+                <div className="flex items-center justify-center gap-3">
+                  <Icon name="User" className="text-primary" size={32} />
+                </div>
+                <div className="bg-white p-6 rounded-lg border border-primary/20">
+                  <p className="text-sm text-muted-foreground mb-2">Ваш игровой ник</p>
+                  <p className="text-3xl font-bold text-primary">{nickname}</p>
+                </div>
+              </div>
+
+              <div className="text-center space-y-4">
+                <div className="flex items-center justify-center gap-3">
+                  <Icon name="Coins" className="text-primary" size={32} />
+                </div>
+                <div className="bg-white p-6 rounded-lg border border-primary/20">
+                  <p className="text-sm text-muted-foreground mb-2">Вы получите</p>
+                  <p className="text-4xl font-bold text-primary">{amount}</p>
+                  <p className="text-lg text-muted-foreground mt-1">донат рублей</p>
+                </div>
+              </div>
+
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Icon name="Wallet" className="text-primary" size={24} />
@@ -128,32 +149,12 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Icon name="User" className="text-primary" size={24} />
-                  <Label className="text-lg font-semibold text-primary">Получатель</Label>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-primary/20">
-                  <p className="text-xl font-semibold text-foreground">ИВАН ИВАНОВИЧ И.</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Icon name="Hash" className="text-primary" size={24} />
-                  <Label className="text-lg font-semibold text-primary">Комментарий к переводу</Label>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-primary/20">
-                  <p className="text-xl font-semibold text-foreground">Донат для {nickname}</p>
-                </div>
-              </div>
             </div>
 
             <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 flex gap-3">
               <Icon name="AlertCircle" className="text-yellow-600 flex-shrink-0" size={24} />
               <p className="text-sm text-yellow-800">
-                <strong>Важно!</strong> Обязательно укажите комментарий при переводе, чтобы мы могли зачислить донат рубли на ваш аккаунт
+                <strong>Важно!</strong> После оплаты нажмите кнопку "Оплатил" — донат рубли автоматически зачислятся на ваш аккаунт
               </p>
             </div>
 
