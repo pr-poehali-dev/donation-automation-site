@@ -55,6 +55,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
         admin_chat_id = os.environ.get('TELEGRAM_ADMIN_CHAT_ID', '')
         
+        print(f"Bot token present: {bool(bot_token)}, Admin chat ID: {admin_chat_id}")
+        
         if bot_token and admin_chat_id:
             message_text = f"🔔 Новая заявка на донат!\n\n👤 Ник: {nickname}\n💰 Сумма: {amount} донат рублей\n🆔 ID заявки: {request_id}"
             
@@ -66,19 +68,32 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
             
             telegram_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-            telegram_response = requests.post(telegram_url, json={
-                'chat_id': admin_chat_id,
-                'text': message_text,
-                'reply_markup': keyboard
-            })
+            print(f"Sending to Telegram: {telegram_url[:50]}...")
             
-            if telegram_response.status_code == 200:
-                message_id = telegram_response.json()['result']['message_id']
-                cur.execute(
-                    "UPDATE donation_requests SET telegram_message_id = %s WHERE id = %s",
-                    (str(message_id), request_id)
-                )
-                conn.commit()
+            try:
+                telegram_response = requests.post(telegram_url, json={
+                    'chat_id': admin_chat_id,
+                    'text': message_text,
+                    'reply_markup': keyboard
+                }, timeout=10)
+                
+                print(f"Telegram response status: {telegram_response.status_code}")
+                print(f"Telegram response: {telegram_response.text}")
+                
+                if telegram_response.status_code == 200:
+                    message_id = telegram_response.json()['result']['message_id']
+                    cur.execute(
+                        "UPDATE donation_requests SET telegram_message_id = %s WHERE id = %s",
+                        (str(message_id), request_id)
+                    )
+                    conn.commit()
+                    print(f"Message sent successfully, message_id: {message_id}")
+                else:
+                    print(f"Failed to send Telegram message: {telegram_response.text}")
+            except Exception as e:
+                print(f"Error sending Telegram message: {str(e)}")
+        else:
+            print("Telegram credentials not configured")
         
         cur.close()
         conn.close()
