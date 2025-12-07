@@ -6,13 +6,17 @@ import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 
+const DONATE_API_URL = 'https://functions.poehali.dev/7826d27c-83d2-42a5-9c83-1356cc38d844';
+
 const Index = () => {
   const [nickname, setNickname] = useState('');
   const [amount, setAmount] = useState('');
   const [showPayment, setShowPayment] = useState(false);
+  const [requestId, setRequestId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!nickname || !amount) {
@@ -24,14 +28,78 @@ const Index = () => {
       return;
     }
 
-    setShowPayment(true);
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch(DONATE_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nickname,
+          amount: parseInt(amount)
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setRequestId(data.request_id);
+        setShowPayment(true);
+      } else {
+        toast({
+          title: "Ошибка",
+          description: "Не удалось создать заявку",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при отправке заявки",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handlePaymentConfirm = () => {
-    toast({
-      title: "Заявка отправлена!",
-      description: "Администратор получил уведомление о вашей оплате",
-    });
+  const handlePaymentConfirm = async () => {
+    setIsLoading(true);
+    
+    try {
+      await fetch(DONATE_API_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          request_id: requestId,
+          status: 'paid'
+        })
+      });
+
+      toast({
+        title: "Заявка отправлена!",
+        description: "Администратор получил уведомление о вашей оплате",
+      });
+      
+      setTimeout(() => {
+        setShowPayment(false);
+        setNickname('');
+        setAmount('');
+        setRequestId(null);
+      }, 2000);
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось отправить уведомление",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (showPayment) {
@@ -92,14 +160,16 @@ const Index = () => {
             <div className="flex gap-4">
               <Button 
                 onClick={handlePaymentConfirm}
+                disabled={isLoading}
                 className="flex-1 h-14 text-lg font-semibold transition-all hover:scale-105"
                 size="lg"
               >
                 <Icon name="Check" className="mr-2" size={24} />
-                Оплатил
+                {isLoading ? 'Отправка...' : 'Оплатил'}
               </Button>
               <Button 
                 onClick={() => setShowPayment(false)}
+                disabled={isLoading}
                 variant="outline"
                 className="h-14 px-6 border-2 transition-all hover:scale-105"
                 size="lg"
@@ -160,11 +230,12 @@ const Index = () => {
 
             <Button 
               type="submit" 
+              disabled={isLoading}
               className="w-full h-14 text-lg font-semibold transition-all hover:scale-105"
               size="lg"
             >
               <Icon name="ArrowRight" className="mr-2" size={24} />
-              Продолжить к оплате
+              {isLoading ? 'Загрузка...' : 'Продолжить к оплате'}
             </Button>
           </form>
         </CardContent>
